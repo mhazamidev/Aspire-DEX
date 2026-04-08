@@ -416,3 +416,6 @@ FodyWeavers.xsd
 *.msix
 *.msm
 *.msp
+
+
+/Aspire-DEX/AspireDEX.AppHost/appsettings.Development.json
