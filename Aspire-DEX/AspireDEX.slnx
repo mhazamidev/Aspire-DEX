@@ -1,0 +1,7 @@
+<Solution>
+  <Project Path="AspireDEX.ApiService/AspireDEX.ApiService.csproj" />
+  <Project Path="AspireDEX.AppHost/AspireDEX.AppHost.csproj" />
+  <Project Path="AspireDEX.Blockchain/AspireDEX.Blockchain.csproj" />
+  <Project Path="AspireDEX.ServiceDefaults/AspireDEX.ServiceDefaults.csproj" />
+  <Project Path="AspireDEX.Web/AspireDEX.Web.csproj" />
+</Solution>

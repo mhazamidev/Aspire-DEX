@@ -1,0 +1,20 @@
+{
+  "projectName": "AspireDEX.Blockchain",
+  "namespace": "AspireDEX.Blockchain.Contracts",
+  "lang": 0,
+  "autoCodeGen": true,
+  "contracts": [
+    {
+      "abiFile": "../Web3/artifacts/contracts/Factory.sol/Factory.json",
+      "outputPathOverride": "Contracts/Factory"
+    },
+    {
+      "abiFile": "../Web3/artifacts/contracts/Pair.sol/Pair.json",
+      "outputPathOverride": "Contracts/Pair"
+    },
+    {
+      "abiFile": "../Web3/artifacts/contracts/Router.sol/Router.json",
+      "outputPathOverride": "Contracts/Router"
+    }
+  ]
+}
