@@ -16,23 +16,23 @@ namespace AspireDEX.Blockchain.Contracts.Pair
 {
     public partial class PairService : PairServiceBase
     {
-        public static Task<TransactionReceipt> DeployContractAndWaitForReceiptAsync(Nethereum.Web3.IWeb3 web3, PairDeployment pairDeployment, CancellationTokenSource cancellationTokenSource = null)
+        public static Task<TransactionReceipt> DeployContractAndWaitForReceiptAsync(IWeb3 web3, PairDeployment pairDeployment, CancellationTokenSource cancellationTokenSource = null)
         {
             return web3.Eth.GetContractDeploymentHandler<PairDeployment>().SendRequestAndWaitForReceiptAsync(pairDeployment, cancellationTokenSource);
         }
 
-        public static Task<string> DeployContractAsync(Nethereum.Web3.IWeb3 web3, PairDeployment pairDeployment)
+        public static Task<string> DeployContractAsync(IWeb3 web3, PairDeployment pairDeployment)
         {
             return web3.Eth.GetContractDeploymentHandler<PairDeployment>().SendRequestAsync(pairDeployment);
         }
 
-        public static async Task<PairService> DeployContractAndGetServiceAsync(Nethereum.Web3.IWeb3 web3, PairDeployment pairDeployment, CancellationTokenSource cancellationTokenSource = null)
+        public static async Task<PairService> DeployContractAndGetServiceAsync(IWeb3 web3, PairDeployment pairDeployment, CancellationTokenSource cancellationTokenSource = null)
         {
             var receipt = await DeployContractAndWaitForReceiptAsync(web3, pairDeployment, cancellationTokenSource);
             return new PairService(web3, receipt.ContractAddress);
         }
 
-        public PairService(Nethereum.Web3.IWeb3 web3, string contractAddress) : base(web3, contractAddress)
+        public PairService(IWeb3 web3, string contractAddress) : base(web3, contractAddress)
         {
         }
 
@@ -42,7 +42,7 @@ namespace AspireDEX.Blockchain.Contracts.Pair
     public partial class PairServiceBase : ContractWeb3ServiceBase
     {
 
-        public PairServiceBase(Nethereum.Web3.IWeb3 web3, string contractAddress) : base(web3, contractAddress)
+        public PairServiceBase(IWeb3 web3, string contractAddress) : base(web3, contractAddress)
         {
         }
 

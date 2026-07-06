@@ -6,12 +6,49 @@
 
 <h1>Liquidity</h1>
 <p class="text-muted">
-    Adding liquidity for a token pair that has no pool yet will have the Router create one
-    automatically via the Factory on the first deposit.
+    This Router has no addLiquidity/removeLiquidity of its own — a pool must be created first,
+    then liquidity is provisioned directly against the Pair contract (transfer tokens in, then
+    mint/burn). See the README for the atomicity caveat that comes with that.
 </p>
 
 <div class="row g-4">
-    <div class="col-md-6">
+    <div class="col-md-4">
+        <div class="card h-100">
+            <div class="card-header">Create pool</div>
+            <div class="card-body">
+                <div class="mb-2">
+                    <label class="form-label">Token A</label>
+                    <input class="form-control" @bind="_newTokenA" placeholder="0x..." />
+                </div>
+                <div class="mb-2">
+                    <label class="form-label">Token B</label>
+                    <input class="form-control" @bind="_newTokenB" placeholder="0x..." />
+                </div>
+                <div class="mb-2">
+                    <label class="form-label">Base fee (bps of 10,000)</label>
+                    <input type="number" class="form-control" @bind="_newBaseFeeBps" />
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Protocol fee (bps, optional)</label>
+                    <input type="number" class="form-control" @bind="_newProtocolFeeBps" />
+                </div>
+                <button class="btn btn-primary" @onclick="CreatePoolAsync" disabled="@_busy">
+                    Create pool
+                </button>
+
+                @if (_createTxHash is not null)
+                {
+                    <div class="alert alert-success mt-3 mb-0">Tx sent: <code>@_createTxHash</code></div>
+                }
+                @if (_createError is not null)
+                {
+                    <div class="alert alert-danger mt-3 mb-0">@_createError</div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
         <div class="card h-100">
             <div class="card-header">Add liquidity</div>
             <div class="card-body">
@@ -23,7 +60,7 @@
                     <label class="form-label">Token B</label>
                     <input class="form-control" @bind="_tokenB" placeholder="0x..." />
                 </div>
-                <div class="row mb-2">
+                <div class="row mb-3">
                     <div class="col">
                         <label class="form-label">Amount A</label>
                         <input class="form-control" @bind="_amountA" placeholder="1.0" />
@@ -33,17 +70,16 @@
                         <input class="form-control" @bind="_amountB" placeholder="1.0" />
                     </div>
                 </div>
-                <div class="mb-3">
-                    <label class="form-label">Max slippage on minimums (%)</label>
-                    <input class="form-control" @bind="_slippagePercent" style="max-width: 120px;" />
-                </div>
                 <button class="btn btn-primary" @onclick="AddLiquidityAsync" disabled="@_busy">
                     Add liquidity
                 </button>
 
-                @if (_addTxHash is not null)
+                @if (_addResult is not null)
                 {
-                    <div class="alert alert-success mt-3 mb-0">Tx sent: <code>@_addTxHash</code></div>
+                    <div class="alert alert-success mt-3 mb-0">
+                        Minted <strong>@_addResult.LiquidityMinted</strong> LP (wei)<br />
+                        mint tx: <code>@_addResult.MintTransactionHash</code>
+                    </div>
                 }
                 @if (_addError is not null)
                 {
@@ -53,29 +89,29 @@
         </div>
     </div>
 
-    <div class="col-md-6">
+    <div class="col-md-4">
         <div class="card h-100">
             <div class="card-header">Remove liquidity</div>
             <div class="card-body">
                 <div class="mb-2">
-                    <label class="form-label">Token A</label>
-                    <input class="form-control" @bind="_removeTokenA" placeholder="0x..." />
-                </div>
-                <div class="mb-2">
-                    <label class="form-label">Token B</label>
-                    <input class="form-control" @bind="_removeTokenB" placeholder="0x..." />
+                    <label class="form-label">Pair address</label>
+                    <input class="form-control" @bind="_removePairAddress" placeholder="0x..." />
                 </div>
                 <div class="mb-3">
                     <label class="form-label">LP tokens to burn (wei)</label>
                     <input class="form-control" @bind="_liquidityWei" placeholder="1000000000000000000" />
                 </div>
+                <div class="mb-3">
+                    <label class="form-label">Recipient (usually the operator account)</label>
+                    <input class="form-control" @bind="_removeTo" placeholder="0x..." />
+                </div>
                 <button class="btn btn-outline-danger" @onclick="RemoveLiquidityAsync" disabled="@_busy">
                     Remove liquidity
                 </button>
 
-                @if (_removeTxHash is not null)
+                @if (_removeResult is not null)
                 {
-                    <div class="alert alert-success mt-3 mb-0">Tx sent: <code>@_removeTxHash</code></div>
+                    <div class="alert alert-success mt-3 mb-0">burn tx: <code>@_removeResult.BurnTransactionHash</code></div>
                 }
                 @if (_removeError is not null)
                 {
@@ -87,44 +123,69 @@
 </div>
 
 @code {
+    private string _newTokenA = "";
+    private string _newTokenB = "";
+    private int _newBaseFeeBps = 30;
+    private int _newProtocolFeeBps = 0;
+    private string? _createTxHash;
+    private string? _createError;
+
     private string _tokenA = "";
     private string _tokenB = "";
     private string _amountA = "1.0";
     private string _amountB = "1.0";
-    private decimal _slippagePercent = 1.0m;
-    private string? _addTxHash;
+    private AddLiquidityResult? _addResult;
     private string? _addError;
 
-    private string _removeTokenA = "";
-    private string _removeTokenB = "";
+    private string _removePairAddress = "";
     private string _liquidityWei = "";
-    private string? _removeTxHash;
+    private string _removeTo = "";
+    private RemoveLiquidityResult? _removeResult;
     private string? _removeError;
 
     private bool _busy;
 
+    private async Task CreatePoolAsync()
+    {
+        _createError = null;
+        _createTxHash = null;
+        _busy = true;
+        try
+        {
+            const string zeroAddress = "0x0000000000000000000000000000000000000000";
+            var request = new CreatePoolRequestDto(
+                _newTokenA, _newTokenB,
+                (ushort)_newBaseFeeBps, zeroAddress, (ushort)_newProtocolFeeBps);
+
+            var result = await Dex.CreatePoolAsync(request);
+            _createTxHash = result.TransactionHash;
+        }
+        catch (Exception ex)
+        {
+            _createError = ex.Message;
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+
     private async Task AddLiquidityAsync()
     {
         _addError = null;
-        _addTxHash = null;
+        _addResult = null;
         _busy = true;
         try
         {
             var amountAWei = ToWei(_amountA);
             var amountBWei = ToWei(_amountB);
-            var minA = ApplySlippage(amountAWei, _slippagePercent);
-            var minB = ApplySlippage(amountBWei, _slippagePercent);
-            var deadline = DateTimeOffset.UtcNow.AddMinutes(10).ToUnixTimeSeconds();
 
             var request = new AddLiquidityRequestDto(
                 _tokenA, _tokenB,
                 amountAWei.ToString(), amountBWei.ToString(),
-                minA.ToString(), minB.ToString(),
-                _tokenA, // demo: LP tokens minted back to the operator account
-                deadline);
+                _tokenA); // demo: LP tokens minted back to the operator account
 
-            var result = await Dex.AddLiquidityAsync(request);
-            _addTxHash = result.TransactionHash;
+            _addResult = await Dex.AddLiquidityAsync(request);
         }
         catch (Exception ex)
         {
@@ -139,7 +200,7 @@
     private async Task RemoveLiquidityAsync()
     {
         _removeError = null;
-        _removeTxHash = null;
+        _removeResult = null;
         _busy = true;
         try
         {
@@ -149,16 +210,8 @@
                 return;
             }
 
-            var deadline = DateTimeOffset.UtcNow.AddMinutes(10).ToUnixTimeSeconds();
-            var request = new RemoveLiquidityRequestDto(
-                _removeTokenA, _removeTokenB,
-                liquidity.ToString(),
-                "0", "0", // demo: no minimum-out protection on removal; set real minimums in production
-                _removeTokenA,
-                deadline);
-
-            var result = await Dex.RemoveLiquidityAsync(request);
-            _removeTxHash = result.TransactionHash;
+            var request = new RemoveLiquidityRequestDto(_removePairAddress, liquidity.ToString(), _removeTo);
+            _removeResult = await Dex.RemoveLiquidityAsync(request);
         }
         catch (Exception ex)
         {
@@ -180,11 +233,5 @@
 
         var scaled = value * (decimal)BigInteger.Pow(10, decimals);
         return new BigInteger(scaled);
-    }
-
-    private static BigInteger ApplySlippage(BigInteger amount, decimal slippagePercent)
-    {
-        var keepBps = (int)Math.Round((100 - slippagePercent) * 100);
-        return amount * keepBps / 10_000;
     }
 }

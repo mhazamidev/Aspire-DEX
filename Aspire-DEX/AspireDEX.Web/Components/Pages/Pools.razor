@@ -34,6 +34,8 @@ else
                     <th>Reserve 0</th>
                     <th>Reserve 1</th>
                     <th>LP Total Supply</th>
+                    <th>Fee</th>
+                    <th>Status</th>
                     <th></th>
                 </tr>
             </thead>
@@ -48,6 +50,17 @@ else
                         <td>@pool.Reserve0</td>
                         <td>@pool.Reserve1</td>
                         <td>@pool.TotalSupply <span class="text-muted">(@pool.LpTokenSymbol)</span></td>
+                        <td>@FeePercent(pool)%</td>
+                        <td>
+                            @if (pool.CircuitBreakerTripped)
+                            {
+                                <span class="badge text-bg-danger">Circuit breaker tripped</span>
+                            }
+                            else
+                            {
+                                <span class="badge text-bg-success">Active</span>
+                            }
+                        </td>
                         <td>
                             <a class="btn btn-sm btn-outline-primary" href="@($"/swap?pair={pool.PairAddress}")">Swap</a>
                             <a class="btn btn-sm btn-outline-secondary" href="@($"/liquidity?pair={pool.PairAddress}")">Add liquidity</a>
@@ -80,4 +93,11 @@ else
 
     private static string Short(string address) =>
         address.Length > 10 ? $"{address[..6]}…{address[^4..]}" : address;
+
+    private static string FeePercent(PoolDto pool)
+    {
+        if (!int.TryParse(pool.FeeDenominator, out var denominator) || denominator == 0) return "?";
+        var totalFeeBps = pool.BaseFeeBps + pool.VolatilityFeeBps;
+        return (100.0 * totalFeeBps / denominator).ToString("0.00");
+    }
 }

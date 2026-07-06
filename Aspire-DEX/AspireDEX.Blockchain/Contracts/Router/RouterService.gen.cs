@@ -16,23 +16,23 @@ namespace AspireDEX.Blockchain.Contracts.Router
 {
     public partial class RouterService: RouterServiceBase
     {
-        public static Task<TransactionReceipt> DeployContractAndWaitForReceiptAsync(Nethereum.Web3.IWeb3 web3, RouterDeployment routerDeployment, CancellationTokenSource cancellationTokenSource = null)
+        public static Task<TransactionReceipt> DeployContractAndWaitForReceiptAsync(IWeb3 web3, RouterDeployment routerDeployment, CancellationTokenSource cancellationTokenSource = null)
         {
             return web3.Eth.GetContractDeploymentHandler<RouterDeployment>().SendRequestAndWaitForReceiptAsync(routerDeployment, cancellationTokenSource);
         }
 
-        public static Task<string> DeployContractAsync(Nethereum.Web3.IWeb3 web3, RouterDeployment routerDeployment)
+        public static Task<string> DeployContractAsync(IWeb3 web3, RouterDeployment routerDeployment)
         {
             return web3.Eth.GetContractDeploymentHandler<RouterDeployment>().SendRequestAsync(routerDeployment);
         }
 
-        public static async Task<RouterService> DeployContractAndGetServiceAsync(Nethereum.Web3.IWeb3 web3, RouterDeployment routerDeployment, CancellationTokenSource cancellationTokenSource = null)
+        public static async Task<RouterService> DeployContractAndGetServiceAsync(IWeb3 web3, RouterDeployment routerDeployment, CancellationTokenSource cancellationTokenSource = null)
         {
             var receipt = await DeployContractAndWaitForReceiptAsync(web3, routerDeployment, cancellationTokenSource);
             return new RouterService(web3, receipt.ContractAddress);
         }
 
-        public RouterService(Nethereum.Web3.IWeb3 web3, string contractAddress) : base(web3, contractAddress)
+        public RouterService(IWeb3 web3, string contractAddress) : base(web3, contractAddress)
         {
         }
 
@@ -42,7 +42,7 @@ namespace AspireDEX.Blockchain.Contracts.Router
     public partial class RouterServiceBase : ContractWeb3ServiceBase
     {
 
-        public RouterServiceBase(Nethereum.Web3.IWeb3 web3, string contractAddress) : base(web3, contractAddress)
+        public RouterServiceBase(IWeb3 web3, string contractAddress) : base(web3, contractAddress)
         {
         }
 

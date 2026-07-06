@@ -16,23 +16,23 @@ namespace AspireDEX.Blockchain.Contracts.Factory
 {
     public partial class FactoryService: FactoryServiceBase
     {
-        public static Task<TransactionReceipt> DeployContractAndWaitForReceiptAsync(Nethereum.Web3.IWeb3 web3, FactoryDeployment factoryDeployment, CancellationTokenSource cancellationTokenSource = null)
+        public static Task<TransactionReceipt> DeployContractAndWaitForReceiptAsync(IWeb3 web3, FactoryDeployment factoryDeployment, CancellationTokenSource cancellationTokenSource = null)
         {
             return web3.Eth.GetContractDeploymentHandler<FactoryDeployment>().SendRequestAndWaitForReceiptAsync(factoryDeployment, cancellationTokenSource);
         }
 
-        public static Task<string> DeployContractAsync(Nethereum.Web3.IWeb3 web3, FactoryDeployment factoryDeployment)
+        public static Task<string> DeployContractAsync(IWeb3 web3, FactoryDeployment factoryDeployment)
         {
             return web3.Eth.GetContractDeploymentHandler<FactoryDeployment>().SendRequestAsync(factoryDeployment);
         }
 
-        public static async Task<FactoryService> DeployContractAndGetServiceAsync(Nethereum.Web3.IWeb3 web3, FactoryDeployment factoryDeployment, CancellationTokenSource cancellationTokenSource = null)
+        public static async Task<FactoryService> DeployContractAndGetServiceAsync(IWeb3 web3, FactoryDeployment factoryDeployment, CancellationTokenSource cancellationTokenSource = null)
         {
             var receipt = await DeployContractAndWaitForReceiptAsync(web3, factoryDeployment, cancellationTokenSource);
             return new FactoryService(web3, receipt.ContractAddress);
         }
 
-        public FactoryService(Nethereum.Web3.IWeb3 web3, string contractAddress) : base(web3, contractAddress)
+        public FactoryService(IWeb3 web3, string contractAddress) : base(web3, contractAddress)
         {
         }
 
@@ -42,7 +42,7 @@ namespace AspireDEX.Blockchain.Contracts.Factory
     public partial class FactoryServiceBase: ContractWeb3ServiceBase
     {
 
-        public FactoryServiceBase(Nethereum.Web3.IWeb3 web3, string contractAddress) : base(web3, contractAddress)
+        public FactoryServiceBase(IWeb3 web3, string contractAddress) : base(web3, contractAddress)
         {
         }
 
