@@ -11,7 +11,10 @@ using System.Threading;
 
 namespace AspireDEX.Blockchain.Contracts.Router.ContractDefinition
 {
-
+    // NOTE: regenerated against the current Router.sol — this Router has no addLiquidity/
+    // removeLiquidity/getAmountsOut of its own (unlike a classic Uniswap V2 Router). Liquidity
+    // is provisioned directly on Pair (transfer tokens to the pair, then Pair.mint/burn); this
+    // Router only quotes and executes swaps, with oracle-deviation and circuit-breaker checks.
 
     public partial class RouterDeployment : RouterDeploymentBase
     {
@@ -26,29 +29,8 @@ namespace AspireDEX.Blockchain.Contracts.Router.ContractDefinition
         public RouterDeploymentBase(string byteCode) : base(byteCode) { }
         [Parameter("address", "_factory", 1)]
         public virtual string Factory { get; set; }
-    }
-
-    public partial class AddLiquidityFunction : AddLiquidityFunctionBase { }
-
-    [Function("addLiquidity", typeof(AddLiquidityOutputDTO))]
-    public class AddLiquidityFunctionBase : FunctionMessage
-    {
-        [Parameter("address", "tokenA", 1)]
-        public virtual string TokenA { get; set; }
-        [Parameter("address", "tokenB", 2)]
-        public virtual string TokenB { get; set; }
-        [Parameter("uint256", "amountADesired", 3)]
-        public virtual BigInteger AmountADesired { get; set; }
-        [Parameter("uint256", "amountBDesired", 4)]
-        public virtual BigInteger AmountBDesired { get; set; }
-        [Parameter("uint256", "amountAMin", 5)]
-        public virtual BigInteger AmountAMin { get; set; }
-        [Parameter("uint256", "amountBMin", 6)]
-        public virtual BigInteger AmountBMin { get; set; }
-        [Parameter("address", "to", 7)]
-        public virtual string To { get; set; }
-        [Parameter("uint256", "deadline", 8)]
-        public virtual BigInteger Deadline { get; set; }
+        [Parameter("address", "_oracle", 2)]
+        public virtual string Oracle { get; set; }
     }
 
     public partial class FactoryFunction : FactoryFunctionBase { }
@@ -59,23 +41,18 @@ namespace AspireDEX.Blockchain.Contracts.Router.ContractDefinition
 
     }
 
-    public partial class GetAmountOutFunction : GetAmountOutFunctionBase { }
+    public partial class OracleFunction : OracleFunctionBase { }
 
-    [Function("getAmountOut", "uint256")]
-    public class GetAmountOutFunctionBase : FunctionMessage
+    [Function("oracle", "address")]
+    public class OracleFunctionBase : FunctionMessage
     {
-        [Parameter("uint256", "amountIn", 1)]
-        public virtual BigInteger AmountIn { get; set; }
-        [Parameter("uint256", "reserveIn", 2)]
-        public virtual BigInteger ReserveIn { get; set; }
-        [Parameter("uint256", "reserveOut", 3)]
-        public virtual BigInteger ReserveOut { get; set; }
+
     }
 
-    public partial class GetAmountsOutFunction : GetAmountsOutFunctionBase { }
+    public partial class QuoteExactInputFunction : QuoteExactInputFunctionBase { }
 
-    [Function("getAmountsOut", "uint256[]")]
-    public class GetAmountsOutFunctionBase : FunctionMessage
+    [Function("quoteExactInput", "uint256[]")]
+    public class QuoteExactInputFunctionBase : FunctionMessage
     {
         [Parameter("uint256", "amountIn", 1)]
         public virtual BigInteger AmountIn { get; set; }
@@ -83,25 +60,15 @@ namespace AspireDEX.Blockchain.Contracts.Router.ContractDefinition
         public virtual List<string> Path { get; set; }
     }
 
-    public partial class RemoveLiquidityFunction : RemoveLiquidityFunctionBase { }
+    public partial class QuoteExactOutputFunction : QuoteExactOutputFunctionBase { }
 
-    [Function("removeLiquidity", typeof(RemoveLiquidityOutputDTO))]
-    public class RemoveLiquidityFunctionBase : FunctionMessage
+    [Function("quoteExactOutput", "uint256[]")]
+    public class QuoteExactOutputFunctionBase : FunctionMessage
     {
-        [Parameter("address", "tokenA", 1)]
-        public virtual string TokenA { get; set; }
-        [Parameter("address", "tokenB", 2)]
-        public virtual string TokenB { get; set; }
-        [Parameter("uint256", "liquidity", 3)]
-        public virtual BigInteger Liquidity { get; set; }
-        [Parameter("uint256", "amountAMin", 4)]
-        public virtual BigInteger AmountAMin { get; set; }
-        [Parameter("uint256", "amountBMin", 5)]
-        public virtual BigInteger AmountBMin { get; set; }
-        [Parameter("address", "to", 6)]
-        public virtual string To { get; set; }
-        [Parameter("uint256", "deadline", 7)]
-        public virtual BigInteger Deadline { get; set; }
+        [Parameter("uint256", "amountOut", 1)]
+        public virtual BigInteger AmountOut { get; set; }
+        [Parameter("address[]", "path", 2)]
+        public virtual List<string> Path { get; set; }
     }
 
     public partial class SwapExactTokensForTokensFunction : SwapExactTokensForTokensFunctionBase { }
@@ -121,17 +88,94 @@ namespace AspireDEX.Blockchain.Contracts.Router.ContractDefinition
         public virtual BigInteger Deadline { get; set; }
     }
 
-    public partial class AddLiquidityOutputDTO : AddLiquidityOutputDTOBase { }
+    public partial class SwapTokensForExactTokensFunction : SwapTokensForExactTokensFunctionBase { }
 
-    [FunctionOutput]
-    public class AddLiquidityOutputDTOBase : IFunctionOutputDTO 
+    [Function("swapTokensForExactTokens", "uint256[]")]
+    public class SwapTokensForExactTokensFunctionBase : FunctionMessage
     {
-        [Parameter("uint256", "amountA", 1)]
-        public virtual BigInteger AmountA { get; set; }
-        [Parameter("uint256", "amountB", 2)]
-        public virtual BigInteger AmountB { get; set; }
-        [Parameter("uint256", "liquidity", 3)]
-        public virtual BigInteger Liquidity { get; set; }
+        [Parameter("uint256", "amountOut", 1)]
+        public virtual BigInteger AmountOut { get; set; }
+        [Parameter("uint256", "amountInMax", 2)]
+        public virtual BigInteger AmountInMax { get; set; }
+        [Parameter("address[]", "path", 3)]
+        public virtual List<string> Path { get; set; }
+        [Parameter("address", "to", 4)]
+        public virtual string To { get; set; }
+        [Parameter("uint256", "deadline", 5)]
+        public virtual BigInteger Deadline { get; set; }
+    }
+
+    public partial class ExpiredError : ExpiredErrorBase { }
+
+    [Error("Expired")]
+    public class ExpiredErrorBase : IErrorDTO
+    {
+        [Parameter("uint256", "deadline", 1)]
+        public virtual BigInteger Deadline { get; set; }
+        [Parameter("uint256", "current", 2)]
+        public virtual BigInteger Current { get; set; }
+    }
+
+    public partial class InsufficientOutputAmountError : InsufficientOutputAmountErrorBase { }
+
+    [Error("InsufficientOutputAmount")]
+    public class InsufficientOutputAmountErrorBase : IErrorDTO
+    {
+        [Parameter("uint256", "got", 1)]
+        public virtual BigInteger Got { get; set; }
+        [Parameter("uint256", "min", 2)]
+        public virtual BigInteger Min { get; set; }
+    }
+
+    public partial class ExcessiveInputAmountError : ExcessiveInputAmountErrorBase { }
+
+    [Error("ExcessiveInputAmount")]
+    public class ExcessiveInputAmountErrorBase : IErrorDTO
+    {
+        [Parameter("uint256", "got", 1)]
+        public virtual BigInteger Got { get; set; }
+        [Parameter("uint256", "max", 2)]
+        public virtual BigInteger Max { get; set; }
+    }
+
+    public partial class OraclePriceDeviationError : OraclePriceDeviationErrorBase { }
+
+    [Error("OraclePriceDeviation")]
+    public class OraclePriceDeviationErrorBase : IErrorDTO
+    {
+        [Parameter("uint256", "executionPrice", 1)]
+        public virtual BigInteger ExecutionPrice { get; set; }
+        [Parameter("uint256", "oraclePrice", 2)]
+        public virtual BigInteger OraclePrice { get; set; }
+        [Parameter("uint256", "deviation", 3)]
+        public virtual BigInteger Deviation { get; set; }
+    }
+
+    public partial class InvalidPathError : InvalidPathErrorBase { }
+
+    [Error("InvalidPath")]
+    public class InvalidPathErrorBase : IErrorDTO
+    {
+    }
+
+    public partial class PairDoesNotExistError : PairDoesNotExistErrorBase { }
+
+    [Error("PairDoesNotExist")]
+    public class PairDoesNotExistErrorBase : IErrorDTO
+    {
+        [Parameter("address", "tokenA", 1)]
+        public virtual string TokenA { get; set; }
+        [Parameter("address", "tokenB", 2)]
+        public virtual string TokenB { get; set; }
+    }
+
+    public partial class CircuitBreakerActiveError : CircuitBreakerActiveErrorBase { }
+
+    [Error("CircuitBreakerActive")]
+    public class CircuitBreakerActiveErrorBase : IErrorDTO
+    {
+        [Parameter("address", "pair", 1)]
+        public virtual string Pair { get; set; }
     }
 
     public partial class FactoryOutputDTO : FactoryOutputDTOBase { }
@@ -143,34 +187,30 @@ namespace AspireDEX.Blockchain.Contracts.Router.ContractDefinition
         public virtual string ReturnValue1 { get; set; }
     }
 
-    public partial class GetAmountOutOutputDTO : GetAmountOutOutputDTOBase { }
+    public partial class OracleOutputDTO : OracleOutputDTOBase { }
 
     [FunctionOutput]
-    public class GetAmountOutOutputDTOBase : IFunctionOutputDTO 
+    public class OracleOutputDTOBase : IFunctionOutputDTO 
     {
-        [Parameter("uint256", "amountOut", 1)]
-        public virtual BigInteger AmountOut { get; set; }
+        [Parameter("address", "", 1)]
+        public virtual string ReturnValue1 { get; set; }
     }
 
-    public partial class GetAmountsOutOutputDTO : GetAmountsOutOutputDTOBase { }
+    public partial class QuoteExactInputOutputDTO : QuoteExactInputOutputDTOBase { }
 
     [FunctionOutput]
-    public class GetAmountsOutOutputDTOBase : IFunctionOutputDTO 
+    public class QuoteExactInputOutputDTOBase : IFunctionOutputDTO 
     {
         [Parameter("uint256[]", "amounts", 1)]
         public virtual List<BigInteger> Amounts { get; set; }
     }
 
-    public partial class RemoveLiquidityOutputDTO : RemoveLiquidityOutputDTOBase { }
+    public partial class QuoteExactOutputOutputDTO : QuoteExactOutputOutputDTOBase { }
 
     [FunctionOutput]
-    public class RemoveLiquidityOutputDTOBase : IFunctionOutputDTO 
+    public class QuoteExactOutputOutputDTOBase : IFunctionOutputDTO 
     {
-        [Parameter("uint256", "amountA", 1)]
-        public virtual BigInteger AmountA { get; set; }
-        [Parameter("uint256", "amountB", 2)]
-        public virtual BigInteger AmountB { get; set; }
+        [Parameter("uint256[]", "amounts", 1)]
+        public virtual List<BigInteger> Amounts { get; set; }
     }
-
-
 }

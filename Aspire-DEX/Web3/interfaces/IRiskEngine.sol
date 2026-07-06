@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.20;
+
 interface IRiskEngine {
     struct AssetConfig {
         uint256 ltv;                  // max borrow ratio (1e18 = 100%)

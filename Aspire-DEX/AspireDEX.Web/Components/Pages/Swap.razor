@@ -1,0 +1,166 @@
+﻿@page "/swap"
+@rendermode InteractiveServer
+@inject DexApiClient Dex
+
+<PageTitle>Swap · AspireDEX</PageTitle>
+
+<h1>Swap</h1>
+<p class="text-muted">
+    Quotes are read live from the Router. Executing a swap signs and sends a real transaction
+    from the operator account configured on the API service (see README — wallet-based signing
+    is on the roadmap, this demo uses a single server-side account for simplicity).
+</p>
+
+<div class="card" style="max-width: 560px;">
+    <div class="card-body">
+        <div class="mb-3">
+            <label class="form-label">Token In (address)</label>
+            <input class="form-control" @bind="_tokenIn" placeholder="0x..." />
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Token Out (address)</label>
+            <input class="form-control" @bind="_tokenOut" placeholder="0x..." />
+        </div>
+        <div class="row mb-3">
+            <div class="col">
+                <label class="form-label">Amount in (human units)</label>
+                <input class="form-control" @bind="_amountInHuman" placeholder="1.0" />
+            </div>
+            <div class="col">
+                <label class="form-label">Decimals</label>
+                <input type="number" class="form-control" @bind="_decimals" />
+            </div>
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Slippage tolerance (%)</label>
+            <input class="form-control" @bind="_slippagePercent" style="max-width: 120px;" />
+        </div>
+
+        <button class="btn btn-outline-primary me-2" @onclick="GetQuoteAsync" disabled="@_busy">
+            Get quote
+        </button>
+        <button class="btn btn-primary" @onclick="ExecuteSwapAsync" disabled="@(_busy || _quotedAmountOutWei is null)">
+            Swap
+        </button>
+
+        @if (_quotedAmountOutWei is not null)
+        {
+            <div class="alert alert-secondary mt-3 mb-0">
+                Expected out: <strong>@FormatHuman(_quotedAmountOutWei.Value, _decimals)</strong>
+                (min after slippage: @FormatHuman(MinOut(_quotedAmountOutWei.Value, _slippagePercent), _decimals))
+            </div>
+        }
+
+        @if (_txHash is not null)
+        {
+            <div class="alert alert-success mt-3 mb-0">
+                Swap sent — tx hash: <code>@_txHash</code>
+            </div>
+        }
+
+        @if (_error is not null)
+        {
+            <div class="alert alert-danger mt-3 mb-0">@_error</div>
+        }
+    </div>
+</div>
+
+@code {
+    private string _tokenIn = "";
+    private string _tokenOut = "";
+    private string _amountInHuman = "1.0";
+    private int _decimals = 18;
+    private decimal _slippagePercent = 0.5m;
+
+    private BigInteger? _quotedAmountOutWei;
+    private string? _txHash;
+    private string? _error;
+    private bool _busy;
+
+    private async Task GetQuoteAsync()
+    {
+        _error = null;
+        _quotedAmountOutWei = null;
+        _busy = true;
+        try
+        {
+            var amountInWei = ToWei(_amountInHuman, _decimals);
+            var path = new[] { _tokenIn, _tokenOut };
+            var amounts = await Dex.GetSwapQuoteAsync(amountInWei.ToString(), path);
+
+            if (amounts.Count < 2 || !BigInteger.TryParse(amounts[^1], out var lastAmount))
+            {
+                _error = "Router returned an unexpected quote shape.";
+                return;
+            }
+            _quotedAmountOutWei = lastAmount;
+        }
+        catch (Exception ex)
+        {
+            _error = ex.Message;
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+
+    private async Task ExecuteSwapAsync()
+    {
+        if (_quotedAmountOutWei is null) return;
+
+        _error = null;
+        _txHash = null;
+        _busy = true;
+        try
+        {
+            var amountInWei = ToWei(_amountInHuman, _decimals);
+            var amountOutMin = MinOut(_quotedAmountOutWei.Value, _slippagePercent);
+            var deadline = DateTimeOffset.UtcNow.AddMinutes(10).ToUnixTimeSeconds();
+
+            var request = new SwapRequestDto(
+                amountInWei.ToString(),
+                amountOutMin.ToString(),
+                [_tokenIn, _tokenOut],
+                _tokenIn, // "to": demo sends output back to the operator account itself
+                deadline);
+
+            var result = await Dex.ExecuteSwapAsync(request);
+            _txHash = result.TransactionHash;
+        }
+        catch (Exception ex)
+        {
+            _error = ex.Message;
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+
+    private static BigInteger ToWei(string humanAmount, int decimals)
+    {
+        if (!decimal.TryParse(humanAmount, System.Globalization.NumberStyles.Number,
+                System.Globalization.CultureInfo.InvariantCulture, out var value))
+        {
+            throw new ArgumentException($"'{humanAmount}' is not a valid decimal amount.");
+        }
+
+        var scaled = value * (decimal)BigInteger.Pow(10, decimals);
+        return new BigInteger(scaled);
+    }
+
+    private static string FormatHuman(BigInteger weiAmount, int decimals)
+    {
+        var divisor = BigInteger.Pow(10, decimals);
+        var whole = BigInteger.DivRem(weiAmount, divisor, out var remainder);
+        var fraction = remainder.ToString().PadLeft(decimals, '0').TrimEnd('0');
+        return fraction.Length > 0 ? $"{whole}.{fraction}" : whole.ToString();
+    }
+
+    private static BigInteger MinOut(BigInteger quotedOut, decimal slippagePercent)
+    {
+        var keepBps = (int)Math.Round((100 - slippagePercent) * 100); // basis points, 2 decimal precision on the %
+        return quotedOut * keepBps / 10_000;
+    }
+}

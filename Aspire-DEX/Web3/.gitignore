@@ -5,6 +5,9 @@ node_modules
 /cache
 /artifacts
 
+# solc-js fallback compile output (see scripts/solcjs-compile.cjs)
+/artifacts-solcjs
+
 # TypeChain files
 /typechain
 /typechain-types

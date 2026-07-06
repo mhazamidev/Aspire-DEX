@@ -208,24 +208,66 @@ namespace AspireDEX.Blockchain.Contracts.Pair
             return ContractHandler.SendRequestAndWaitForReceiptAsync(swapFunction, cancellationToken);
         }
 
-        public virtual Task<string> SwapRequestAsync(BigInteger amountOut, string tokenOut, string to)
+        public virtual Task<string> SwapRequestAsync(BigInteger amount0Out, BigInteger amount1Out, string to, byte[] data)
         {
             var swapFunction = new SwapFunction();
-            swapFunction.AmountOut = amountOut;
-            swapFunction.TokenOut = tokenOut;
+            swapFunction.Amount0Out = amount0Out;
+            swapFunction.Amount1Out = amount1Out;
             swapFunction.To = to;
+            swapFunction.Data = data;
 
             return ContractHandler.SendRequestAsync(swapFunction);
         }
 
-        public virtual Task<TransactionReceipt> SwapRequestAndWaitForReceiptAsync(BigInteger amountOut, string tokenOut, string to, CancellationTokenSource cancellationToken = null)
+        public virtual Task<TransactionReceipt> SwapRequestAndWaitForReceiptAsync(BigInteger amount0Out, BigInteger amount1Out, string to, byte[] data, CancellationTokenSource cancellationToken = null)
         {
             var swapFunction = new SwapFunction();
-            swapFunction.AmountOut = amountOut;
-            swapFunction.TokenOut = tokenOut;
+            swapFunction.Amount0Out = amount0Out;
+            swapFunction.Amount1Out = amount1Out;
             swapFunction.To = to;
+            swapFunction.Data = data;
 
             return ContractHandler.SendRequestAndWaitForReceiptAsync(swapFunction, cancellationToken);
+        }
+
+        public Task<ushort> BaseFeeQueryAsync(BaseFeeFunction baseFeeFunction, BlockParameter blockParameter = null)
+        {
+            return ContractHandler.QueryAsync<BaseFeeFunction, ushort>(baseFeeFunction, blockParameter);
+        }
+
+        public virtual Task<ushort> BaseFeeQueryAsync(BlockParameter blockParameter = null)
+        {
+            return ContractHandler.QueryAsync<BaseFeeFunction, ushort>(null, blockParameter);
+        }
+
+        public Task<ushort> VolatilityFeeQueryAsync(VolatilityFeeFunction volatilityFeeFunction, BlockParameter blockParameter = null)
+        {
+            return ContractHandler.QueryAsync<VolatilityFeeFunction, ushort>(volatilityFeeFunction, blockParameter);
+        }
+
+        public virtual Task<ushort> VolatilityFeeQueryAsync(BlockParameter blockParameter = null)
+        {
+            return ContractHandler.QueryAsync<VolatilityFeeFunction, ushort>(null, blockParameter);
+        }
+
+        public Task<BigInteger> FeeDenominatorQueryAsync(FeeDenominatorFunction feeDenominatorFunction, BlockParameter blockParameter = null)
+        {
+            return ContractHandler.QueryAsync<FeeDenominatorFunction, BigInteger>(feeDenominatorFunction, blockParameter);
+        }
+
+        public virtual Task<BigInteger> FeeDenominatorQueryAsync(BlockParameter blockParameter = null)
+        {
+            return ContractHandler.QueryAsync<FeeDenominatorFunction, BigInteger>(null, blockParameter);
+        }
+
+        public Task<bool> CircuitBreakerTrippedQueryAsync(CircuitBreakerTrippedFunction circuitBreakerTrippedFunction, BlockParameter blockParameter = null)
+        {
+            return ContractHandler.QueryAsync<CircuitBreakerTrippedFunction, bool>(circuitBreakerTrippedFunction, blockParameter);
+        }
+
+        public virtual Task<bool> CircuitBreakerTrippedQueryAsync(BlockParameter blockParameter = null)
+        {
+            return ContractHandler.QueryAsync<CircuitBreakerTrippedFunction, bool>(null, blockParameter);
         }
 
         public Task<string> SymbolQueryAsync(SymbolFunction symbolFunction, BlockParameter blockParameter = null)
@@ -341,6 +383,10 @@ namespace AspireDEX.Blockchain.Contracts.Pair
                 typeof(BurnFunction),
                 typeof(DecimalsFunction),
                 typeof(GetReservesFunction),
+                typeof(BaseFeeFunction),
+                typeof(VolatilityFeeFunction),
+                typeof(FeeDenominatorFunction),
+                typeof(CircuitBreakerTrippedFunction),
                 typeof(MintFunction),
                 typeof(NameFunction),
                 typeof(SwapFunction),

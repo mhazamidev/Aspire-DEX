@@ -1,0 +1,83 @@
+﻿@page "/pools"
+@rendermode InteractiveServer
+@inject DexApiClient Dex
+
+<PageTitle>Pools · AspireDEX</PageTitle>
+
+<h1>Liquidity Pools</h1>
+<p class="text-muted">Live reserves read directly from the Factory and each Pair contract on-chain.</p>
+
+@if (_loadError is not null)
+{
+    <div class="alert alert-danger">
+        Couldn't load pools: @_loadError
+    </div>
+}
+else if (_pools is null)
+{
+    <p><em>Loading pools…</em></p>
+}
+else if (_pools.Count == 0)
+{
+    <div class="alert alert-info">
+        No pools exist yet. Create one by adding liquidity for a new token pair on the
+        <a href="/liquidity">Liquidity</a> page.
+    </div>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table table-hover align-middle">
+            <thead>
+                <tr>
+                    <th>Pool</th>
+                    <th>Reserve 0</th>
+                    <th>Reserve 1</th>
+                    <th>LP Total Supply</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var pool in _pools)
+                {
+                    <tr>
+                        <td>
+                            <div class="fw-semibold">@Short(pool.Token0) / @Short(pool.Token1)</div>
+                            <div class="text-muted small">@pool.PairAddress</div>
+                        </td>
+                        <td>@pool.Reserve0</td>
+                        <td>@pool.Reserve1</td>
+                        <td>@pool.TotalSupply <span class="text-muted">(@pool.LpTokenSymbol)</span></td>
+                        <td>
+                            <a class="btn btn-sm btn-outline-primary" href="@($"/swap?pair={pool.PairAddress}")">Swap</a>
+                            <a class="btn btn-sm btn-outline-secondary" href="@($"/liquidity?pair={pool.PairAddress}")">Add liquidity</a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+
+@code {
+    private List<PoolDto>? _pools;
+    private string? _loadError;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            _pools = await Dex.GetPoolsAsync();
+        }
+        catch (Exception ex)
+        {
+            // In a demo/testnet environment the RPC endpoint, Factory address or network
+            // connectivity are the most common causes here — surfaced to the operator,
+            // not swallowed, so a broken deployment is obvious rather than silently empty.
+            _loadError = ex.Message;
+        }
+    }
+
+    private static string Short(string address) =>
+        address.Length > 10 ? $"{address[..6]}…{address[^4..]}" : address;
+}

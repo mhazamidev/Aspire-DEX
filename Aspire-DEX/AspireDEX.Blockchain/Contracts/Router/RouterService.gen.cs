@@ -39,51 +39,11 @@ namespace AspireDEX.Blockchain.Contracts.Router
     }
 
 
-    public partial class RouterServiceBase: ContractWeb3ServiceBase
+    public partial class RouterServiceBase : ContractWeb3ServiceBase
     {
 
         public RouterServiceBase(Nethereum.Web3.IWeb3 web3, string contractAddress) : base(web3, contractAddress)
         {
-        }
-
-        public virtual Task<string> AddLiquidityRequestAsync(AddLiquidityFunction addLiquidityFunction)
-        {
-             return ContractHandler.SendRequestAsync(addLiquidityFunction);
-        }
-
-        public virtual Task<TransactionReceipt> AddLiquidityRequestAndWaitForReceiptAsync(AddLiquidityFunction addLiquidityFunction, CancellationTokenSource cancellationToken = null)
-        {
-             return ContractHandler.SendRequestAndWaitForReceiptAsync(addLiquidityFunction, cancellationToken);
-        }
-
-        public virtual Task<string> AddLiquidityRequestAsync(string tokenA, string tokenB, BigInteger amountADesired, BigInteger amountBDesired, BigInteger amountAMin, BigInteger amountBMin, string to, BigInteger deadline)
-        {
-            var addLiquidityFunction = new AddLiquidityFunction();
-                addLiquidityFunction.TokenA = tokenA;
-                addLiquidityFunction.TokenB = tokenB;
-                addLiquidityFunction.AmountADesired = amountADesired;
-                addLiquidityFunction.AmountBDesired = amountBDesired;
-                addLiquidityFunction.AmountAMin = amountAMin;
-                addLiquidityFunction.AmountBMin = amountBMin;
-                addLiquidityFunction.To = to;
-                addLiquidityFunction.Deadline = deadline;
-            
-             return ContractHandler.SendRequestAsync(addLiquidityFunction);
-        }
-
-        public virtual Task<TransactionReceipt> AddLiquidityRequestAndWaitForReceiptAsync(string tokenA, string tokenB, BigInteger amountADesired, BigInteger amountBDesired, BigInteger amountAMin, BigInteger amountBMin, string to, BigInteger deadline, CancellationTokenSource cancellationToken = null)
-        {
-            var addLiquidityFunction = new AddLiquidityFunction();
-                addLiquidityFunction.TokenA = tokenA;
-                addLiquidityFunction.TokenB = tokenB;
-                addLiquidityFunction.AmountADesired = amountADesired;
-                addLiquidityFunction.AmountBDesired = amountBDesired;
-                addLiquidityFunction.AmountAMin = amountAMin;
-                addLiquidityFunction.AmountBMin = amountBMin;
-                addLiquidityFunction.To = to;
-                addLiquidityFunction.Deadline = deadline;
-            
-             return ContractHandler.SendRequestAndWaitForReceiptAsync(addLiquidityFunction, cancellationToken);
         }
 
         public Task<string> FactoryQueryAsync(FactoryFunction factoryFunction, BlockParameter blockParameter = null)
@@ -91,125 +51,127 @@ namespace AspireDEX.Blockchain.Contracts.Router
             return ContractHandler.QueryAsync<FactoryFunction, string>(factoryFunction, blockParameter);
         }
 
-        
         public virtual Task<string> FactoryQueryAsync(BlockParameter blockParameter = null)
         {
             return ContractHandler.QueryAsync<FactoryFunction, string>(null, blockParameter);
         }
 
-        public Task<BigInteger> GetAmountOutQueryAsync(GetAmountOutFunction getAmountOutFunction, BlockParameter blockParameter = null)
+        public Task<string> OracleQueryAsync(OracleFunction oracleFunction, BlockParameter blockParameter = null)
         {
-            return ContractHandler.QueryAsync<GetAmountOutFunction, BigInteger>(getAmountOutFunction, blockParameter);
+            return ContractHandler.QueryAsync<OracleFunction, string>(oracleFunction, blockParameter);
         }
 
-        
-        public virtual Task<BigInteger> GetAmountOutQueryAsync(BigInteger amountIn, BigInteger reserveIn, BigInteger reserveOut, BlockParameter blockParameter = null)
+        public virtual Task<string> OracleQueryAsync(BlockParameter blockParameter = null)
         {
-            var getAmountOutFunction = new GetAmountOutFunction();
-                getAmountOutFunction.AmountIn = amountIn;
-                getAmountOutFunction.ReserveIn = reserveIn;
-                getAmountOutFunction.ReserveOut = reserveOut;
-            
-            return ContractHandler.QueryAsync<GetAmountOutFunction, BigInteger>(getAmountOutFunction, blockParameter);
+            return ContractHandler.QueryAsync<OracleFunction, string>(null, blockParameter);
         }
 
-        public Task<List<BigInteger>> GetAmountsOutQueryAsync(GetAmountsOutFunction getAmountsOutFunction, BlockParameter blockParameter = null)
+        public virtual Task<List<BigInteger>> QuoteExactInputQueryAsync(QuoteExactInputFunction quoteExactInputFunction, BlockParameter blockParameter = null)
         {
-            return ContractHandler.QueryAsync<GetAmountsOutFunction, List<BigInteger>>(getAmountsOutFunction, blockParameter);
+            return ContractHandler.QueryAsync<QuoteExactInputFunction, List<BigInteger>>(quoteExactInputFunction, blockParameter);
         }
 
-        
-        public virtual Task<List<BigInteger>> GetAmountsOutQueryAsync(BigInteger amountIn, List<string> path, BlockParameter blockParameter = null)
+        public virtual Task<List<BigInteger>> QuoteExactInputQueryAsync(BigInteger amountIn, List<string> path, BlockParameter blockParameter = null)
         {
-            var getAmountsOutFunction = new GetAmountsOutFunction();
-                getAmountsOutFunction.AmountIn = amountIn;
-                getAmountsOutFunction.Path = path;
-            
-            return ContractHandler.QueryAsync<GetAmountsOutFunction, List<BigInteger>>(getAmountsOutFunction, blockParameter);
+            var quoteExactInputFunction = new QuoteExactInputFunction();
+            quoteExactInputFunction.AmountIn = amountIn;
+            quoteExactInputFunction.Path = path;
+
+            return ContractHandler.QueryAsync<QuoteExactInputFunction, List<BigInteger>>(quoteExactInputFunction, blockParameter);
         }
 
-        public virtual Task<string> RemoveLiquidityRequestAsync(RemoveLiquidityFunction removeLiquidityFunction)
+        public virtual Task<List<BigInteger>> QuoteExactOutputQueryAsync(QuoteExactOutputFunction quoteExactOutputFunction, BlockParameter blockParameter = null)
         {
-             return ContractHandler.SendRequestAsync(removeLiquidityFunction);
+            return ContractHandler.QueryAsync<QuoteExactOutputFunction, List<BigInteger>>(quoteExactOutputFunction, blockParameter);
         }
 
-        public virtual Task<TransactionReceipt> RemoveLiquidityRequestAndWaitForReceiptAsync(RemoveLiquidityFunction removeLiquidityFunction, CancellationTokenSource cancellationToken = null)
+        public virtual Task<List<BigInteger>> QuoteExactOutputQueryAsync(BigInteger amountOut, List<string> path, BlockParameter blockParameter = null)
         {
-             return ContractHandler.SendRequestAndWaitForReceiptAsync(removeLiquidityFunction, cancellationToken);
-        }
+            var quoteExactOutputFunction = new QuoteExactOutputFunction();
+            quoteExactOutputFunction.AmountOut = amountOut;
+            quoteExactOutputFunction.Path = path;
 
-        public virtual Task<string> RemoveLiquidityRequestAsync(string tokenA, string tokenB, BigInteger liquidity, BigInteger amountAMin, BigInteger amountBMin, string to, BigInteger deadline)
-        {
-            var removeLiquidityFunction = new RemoveLiquidityFunction();
-                removeLiquidityFunction.TokenA = tokenA;
-                removeLiquidityFunction.TokenB = tokenB;
-                removeLiquidityFunction.Liquidity = liquidity;
-                removeLiquidityFunction.AmountAMin = amountAMin;
-                removeLiquidityFunction.AmountBMin = amountBMin;
-                removeLiquidityFunction.To = to;
-                removeLiquidityFunction.Deadline = deadline;
-            
-             return ContractHandler.SendRequestAsync(removeLiquidityFunction);
-        }
-
-        public virtual Task<TransactionReceipt> RemoveLiquidityRequestAndWaitForReceiptAsync(string tokenA, string tokenB, BigInteger liquidity, BigInteger amountAMin, BigInteger amountBMin, string to, BigInteger deadline, CancellationTokenSource cancellationToken = null)
-        {
-            var removeLiquidityFunction = new RemoveLiquidityFunction();
-                removeLiquidityFunction.TokenA = tokenA;
-                removeLiquidityFunction.TokenB = tokenB;
-                removeLiquidityFunction.Liquidity = liquidity;
-                removeLiquidityFunction.AmountAMin = amountAMin;
-                removeLiquidityFunction.AmountBMin = amountBMin;
-                removeLiquidityFunction.To = to;
-                removeLiquidityFunction.Deadline = deadline;
-            
-             return ContractHandler.SendRequestAndWaitForReceiptAsync(removeLiquidityFunction, cancellationToken);
+            return ContractHandler.QueryAsync<QuoteExactOutputFunction, List<BigInteger>>(quoteExactOutputFunction, blockParameter);
         }
 
         public virtual Task<string> SwapExactTokensForTokensRequestAsync(SwapExactTokensForTokensFunction swapExactTokensForTokensFunction)
         {
-             return ContractHandler.SendRequestAsync(swapExactTokensForTokensFunction);
+            return ContractHandler.SendRequestAsync(swapExactTokensForTokensFunction);
         }
 
         public virtual Task<TransactionReceipt> SwapExactTokensForTokensRequestAndWaitForReceiptAsync(SwapExactTokensForTokensFunction swapExactTokensForTokensFunction, CancellationTokenSource cancellationToken = null)
         {
-             return ContractHandler.SendRequestAndWaitForReceiptAsync(swapExactTokensForTokensFunction, cancellationToken);
+            return ContractHandler.SendRequestAndWaitForReceiptAsync(swapExactTokensForTokensFunction, cancellationToken);
         }
 
         public virtual Task<string> SwapExactTokensForTokensRequestAsync(BigInteger amountIn, BigInteger amountOutMin, List<string> path, string to, BigInteger deadline)
         {
             var swapExactTokensForTokensFunction = new SwapExactTokensForTokensFunction();
-                swapExactTokensForTokensFunction.AmountIn = amountIn;
-                swapExactTokensForTokensFunction.AmountOutMin = amountOutMin;
-                swapExactTokensForTokensFunction.Path = path;
-                swapExactTokensForTokensFunction.To = to;
-                swapExactTokensForTokensFunction.Deadline = deadline;
-            
-             return ContractHandler.SendRequestAsync(swapExactTokensForTokensFunction);
+            swapExactTokensForTokensFunction.AmountIn = amountIn;
+            swapExactTokensForTokensFunction.AmountOutMin = amountOutMin;
+            swapExactTokensForTokensFunction.Path = path;
+            swapExactTokensForTokensFunction.To = to;
+            swapExactTokensForTokensFunction.Deadline = deadline;
+
+            return ContractHandler.SendRequestAsync(swapExactTokensForTokensFunction);
         }
 
         public virtual Task<TransactionReceipt> SwapExactTokensForTokensRequestAndWaitForReceiptAsync(BigInteger amountIn, BigInteger amountOutMin, List<string> path, string to, BigInteger deadline, CancellationTokenSource cancellationToken = null)
         {
             var swapExactTokensForTokensFunction = new SwapExactTokensForTokensFunction();
-                swapExactTokensForTokensFunction.AmountIn = amountIn;
-                swapExactTokensForTokensFunction.AmountOutMin = amountOutMin;
-                swapExactTokensForTokensFunction.Path = path;
-                swapExactTokensForTokensFunction.To = to;
-                swapExactTokensForTokensFunction.Deadline = deadline;
-            
-             return ContractHandler.SendRequestAndWaitForReceiptAsync(swapExactTokensForTokensFunction, cancellationToken);
+            swapExactTokensForTokensFunction.AmountIn = amountIn;
+            swapExactTokensForTokensFunction.AmountOutMin = amountOutMin;
+            swapExactTokensForTokensFunction.Path = path;
+            swapExactTokensForTokensFunction.To = to;
+            swapExactTokensForTokensFunction.Deadline = deadline;
+
+            return ContractHandler.SendRequestAndWaitForReceiptAsync(swapExactTokensForTokensFunction, cancellationToken);
+        }
+
+        public virtual Task<string> SwapTokensForExactTokensRequestAsync(SwapTokensForExactTokensFunction swapTokensForExactTokensFunction)
+        {
+            return ContractHandler.SendRequestAsync(swapTokensForExactTokensFunction);
+        }
+
+        public virtual Task<TransactionReceipt> SwapTokensForExactTokensRequestAndWaitForReceiptAsync(SwapTokensForExactTokensFunction swapTokensForExactTokensFunction, CancellationTokenSource cancellationToken = null)
+        {
+            return ContractHandler.SendRequestAndWaitForReceiptAsync(swapTokensForExactTokensFunction, cancellationToken);
+        }
+
+        public virtual Task<string> SwapTokensForExactTokensRequestAsync(BigInteger amountOut, BigInteger amountInMax, List<string> path, string to, BigInteger deadline)
+        {
+            var swapTokensForExactTokensFunction = new SwapTokensForExactTokensFunction();
+            swapTokensForExactTokensFunction.AmountOut = amountOut;
+            swapTokensForExactTokensFunction.AmountInMax = amountInMax;
+            swapTokensForExactTokensFunction.Path = path;
+            swapTokensForExactTokensFunction.To = to;
+            swapTokensForExactTokensFunction.Deadline = deadline;
+
+            return ContractHandler.SendRequestAsync(swapTokensForExactTokensFunction);
+        }
+
+        public virtual Task<TransactionReceipt> SwapTokensForExactTokensRequestAndWaitForReceiptAsync(BigInteger amountOut, BigInteger amountInMax, List<string> path, string to, BigInteger deadline, CancellationTokenSource cancellationToken = null)
+        {
+            var swapTokensForExactTokensFunction = new SwapTokensForExactTokensFunction();
+            swapTokensForExactTokensFunction.AmountOut = amountOut;
+            swapTokensForExactTokensFunction.AmountInMax = amountInMax;
+            swapTokensForExactTokensFunction.Path = path;
+            swapTokensForExactTokensFunction.To = to;
+            swapTokensForExactTokensFunction.Deadline = deadline;
+
+            return ContractHandler.SendRequestAndWaitForReceiptAsync(swapTokensForExactTokensFunction, cancellationToken);
         }
 
         public override List<Type> GetAllFunctionTypes()
         {
             return new List<Type>
             {
-                typeof(AddLiquidityFunction),
                 typeof(FactoryFunction),
-                typeof(GetAmountOutFunction),
-                typeof(GetAmountsOutFunction),
-                typeof(RemoveLiquidityFunction),
-                typeof(SwapExactTokensForTokensFunction)
+                typeof(OracleFunction),
+                typeof(QuoteExactInputFunction),
+                typeof(QuoteExactOutputFunction),
+                typeof(SwapExactTokensForTokensFunction),
+                typeof(SwapTokensForExactTokensFunction)
             };
         }
 
@@ -225,7 +187,13 @@ namespace AspireDEX.Blockchain.Contracts.Router
         {
             return new List<Type>
             {
-
+                typeof(ExpiredError),
+                typeof(InsufficientOutputAmountError),
+                typeof(ExcessiveInputAmountError),
+                typeof(OraclePriceDeviationError),
+                typeof(InvalidPathError),
+                typeof(PairDoesNotExistError),
+                typeof(CircuitBreakerActiveError)
             };
         }
     }

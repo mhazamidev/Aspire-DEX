@@ -94,6 +94,38 @@ namespace AspireDEX.Blockchain.Contracts.Pair.ContractDefinition
 
     }
 
+    public partial class BaseFeeFunction : BaseFeeFunctionBase { }
+
+    [Function("baseFee", "uint16")]
+    public class BaseFeeFunctionBase : FunctionMessage
+    {
+
+    }
+
+    public partial class VolatilityFeeFunction : VolatilityFeeFunctionBase { }
+
+    [Function("volatilityFee", "uint16")]
+    public class VolatilityFeeFunctionBase : FunctionMessage
+    {
+
+    }
+
+    public partial class FeeDenominatorFunction : FeeDenominatorFunctionBase { }
+
+    [Function("FEE_DENOMINATOR", "uint256")]
+    public class FeeDenominatorFunctionBase : FunctionMessage
+    {
+
+    }
+
+    public partial class CircuitBreakerTrippedFunction : CircuitBreakerTrippedFunctionBase { }
+
+    [Function("circuitBreakerTripped", "bool")]
+    public class CircuitBreakerTrippedFunctionBase : FunctionMessage
+    {
+
+    }
+
     public partial class MintFunction : MintFunctionBase { }
 
     [Function("mint", "uint256")]
@@ -116,12 +148,14 @@ namespace AspireDEX.Blockchain.Contracts.Pair.ContractDefinition
     [Function("swap")]
     public class SwapFunctionBase : FunctionMessage
     {
-        [Parameter("uint256", "amountOut", 1)]
-        public virtual BigInteger AmountOut { get; set; }
-        [Parameter("address", "tokenOut", 2)]
-        public virtual string TokenOut { get; set; }
+        [Parameter("uint256", "amount0Out", 1)]
+        public virtual BigInteger Amount0Out { get; set; }
+        [Parameter("uint256", "amount1Out", 2)]
+        public virtual BigInteger Amount1Out { get; set; }
         [Parameter("address", "to", 3)]
         public virtual string To { get; set; }
+        [Parameter("bytes", "data", 4)]
+        public virtual byte[] Data { get; set; }
     }
 
     public partial class SymbolFunction : SymbolFunctionBase { }
@@ -228,13 +262,15 @@ namespace AspireDEX.Blockchain.Contracts.Pair.ContractDefinition
     {
         [Parameter("address", "sender", 1, true )]
         public virtual string Sender { get; set; }
-        [Parameter("uint256", "amountIn", 2, false )]
-        public virtual BigInteger AmountIn { get; set; }
-        [Parameter("uint256", "amountOut", 3, false )]
-        public virtual BigInteger AmountOut { get; set; }
-        [Parameter("address", "tokenIn", 4, true )]
-        public virtual string TokenIn { get; set; }
-        [Parameter("address", "to", 5, true )]
+        [Parameter("uint256", "amount0In", 2, false )]
+        public virtual BigInteger Amount0In { get; set; }
+        [Parameter("uint256", "amount1In", 3, false )]
+        public virtual BigInteger Amount1In { get; set; }
+        [Parameter("uint256", "amount0Out", 4, false )]
+        public virtual BigInteger Amount0Out { get; set; }
+        [Parameter("uint256", "amount1Out", 5, false )]
+        public virtual BigInteger Amount1Out { get; set; }
+        [Parameter("address", "to", 6, true )]
         public virtual string To { get; set; }
     }
 

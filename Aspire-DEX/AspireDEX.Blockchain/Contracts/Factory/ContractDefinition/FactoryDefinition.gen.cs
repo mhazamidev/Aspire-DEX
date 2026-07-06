@@ -53,6 +53,12 @@ namespace AspireDEX.Blockchain.Contracts.Factory.ContractDefinition
         public virtual string TokenA { get; set; }
         [Parameter("address", "tokenB", 2)]
         public virtual string TokenB { get; set; }
+        [Parameter("uint16", "baseFee", 3)]
+        public virtual ushort BaseFee { get; set; }
+        [Parameter("address", "feeTo", 4)]
+        public virtual string FeeTo { get; set; }
+        [Parameter("uint16", "protocolFeeBps", 5)]
+        public virtual ushort ProtocolFeeBps { get; set; }
     }
 
     public partial class GetPairFunction : GetPairFunctionBase { }

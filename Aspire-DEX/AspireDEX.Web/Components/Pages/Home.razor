@@ -1,7 +1,48 @@
 ﻿@page "/"
 
-<PageTitle>Home</PageTitle>
+<PageTitle>AspireDEX</PageTitle>
 
-<h1>Hello, world!</h1>
+<div class="px-4 py-5">
+    <h1 class="display-5 fw-bold">AspireDEX</h1>
+    <p class="col-md-8 fs-5 text-muted">
+        A decentralized exchange built on .NET Aspire, ASP.NET Core and Solidity — a Uniswap V2-style
+        AMM (Factory / Pair / Router) plus a lending protocol (LendingPool, InterestRateModel,
+        LiquidationEngine, OracleHub, RiskEngine) sharing the same on-chain deployment.
+    </p>
 
-Welcome to your new app.
+    <div class="row g-4 mt-2">
+        <div class="col-md-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">Pools</h5>
+                    <p class="card-text text-muted">Browse every liquidity pool with live on-chain reserves.</p>
+                    <a href="/pools" class="btn btn-outline-primary">View pools</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">Swap</h5>
+                    <p class="card-text text-muted">Get a live quote from the Router and execute a token swap.</p>
+                    <a href="/swap" class="btn btn-outline-primary">Swap tokens</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">Liquidity</h5>
+                    <p class="card-text text-muted">Add or remove liquidity for any token pair.</p>
+                    <a href="/liquidity" class="btn btn-outline-primary">Manage liquidity</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="alert alert-warning mt-5">
+        <strong>Demo architecture note:</strong> write operations (swap, add/remove liquidity) are signed
+        by a single operator account configured on the API service, not by each visitor's own wallet.
+        Client-side wallet signing (MetaMask / WalletConnect) is on the roadmap — see the README.
+    </div>
+</div>

@@ -81,20 +81,26 @@ namespace AspireDEX.Blockchain.Contracts.Factory
              return ContractHandler.SendRequestAndWaitForReceiptAsync(createPairFunction, cancellationToken);
         }
 
-        public virtual Task<string> CreatePairRequestAsync(string tokenA, string tokenB)
+        public virtual Task<string> CreatePairRequestAsync(string tokenA, string tokenB, ushort baseFee, string feeTo, ushort protocolFeeBps)
         {
             var createPairFunction = new CreatePairFunction();
                 createPairFunction.TokenA = tokenA;
                 createPairFunction.TokenB = tokenB;
+                createPairFunction.BaseFee = baseFee;
+                createPairFunction.FeeTo = feeTo;
+                createPairFunction.ProtocolFeeBps = protocolFeeBps;
             
              return ContractHandler.SendRequestAsync(createPairFunction);
         }
 
-        public virtual Task<TransactionReceipt> CreatePairRequestAndWaitForReceiptAsync(string tokenA, string tokenB, CancellationTokenSource cancellationToken = null)
+        public virtual Task<TransactionReceipt> CreatePairRequestAndWaitForReceiptAsync(string tokenA, string tokenB, ushort baseFee, string feeTo, ushort protocolFeeBps, CancellationTokenSource cancellationToken = null)
         {
             var createPairFunction = new CreatePairFunction();
                 createPairFunction.TokenA = tokenA;
                 createPairFunction.TokenB = tokenB;
+                createPairFunction.BaseFee = baseFee;
+                createPairFunction.FeeTo = feeTo;
+                createPairFunction.ProtocolFeeBps = protocolFeeBps;
             
              return ContractHandler.SendRequestAndWaitForReceiptAsync(createPairFunction, cancellationToken);
         }

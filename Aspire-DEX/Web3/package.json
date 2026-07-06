@@ -2,6 +2,7 @@
   "type": "module",
   "scripts": {
     "compile": "hardhat compile",
+    "compile:solcjs": "node scripts/solcjs-compile.cjs",
     "test": "hardhat test"
   },
   "devDependencies": {
@@ -9,10 +10,12 @@
     "@nomicfoundation/hardhat-ethers": "^4.0.7",
     "@nomicfoundation/hardhat-toolbox-mocha-ethers": "^3.0.3",
     "@types/chai": "^5.2.3",
+    "@types/mocha": "^10.0.10",
     "@types/node": "^25.5.2",
     "chai": "^6.2.2",
     "ethers": "^6.16.0",
     "hardhat": "^3.3.0",
+    "solc": "^0.8.28",
     "ts-node": "^10.9.2",
     "typescript": "^6.0.2"
   },

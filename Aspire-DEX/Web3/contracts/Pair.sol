@@ -271,8 +271,10 @@ contract Pair is ERC20, ReentrancyGuard {
         uint256 balance0Adjusted = balance0 * FEE_DENOMINATOR - amount0In * totalFee;
         uint256 balance1Adjusted = balance1 * FEE_DENOMINATOR - amount1In * totalFee;
 
-        // K invariant check (with fee adjustment)
-        if (balance0Adjusted * balance1Adjusted == uint256(reserve0_) * uint256(reserve1_) * (FEE_DENOMINATOR ** 2))
+        // K invariant check (with fee adjustment): the new (fee-adjusted) product must be at
+        // least the old reserves' product scaled by FEE_DENOMINATOR^2 — i.e. revert if the
+        // swap extracts more value than the constant-product formula allows.
+        if (balance0Adjusted * balance1Adjusted < uint256(reserve0_) * uint256(reserve1_) * (FEE_DENOMINATOR ** 2))
         {
             revert InvalidK();
         }
