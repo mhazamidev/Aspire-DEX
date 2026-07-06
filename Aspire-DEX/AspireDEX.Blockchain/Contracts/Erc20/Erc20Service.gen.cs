@@ -1,7 +1,4 @@
 using System.Numerics;
-using System.Threading;
-using System.Threading.Tasks;
-using Nethereum.Contracts;
 using Nethereum.Contracts.ContractHandlers;
 using Nethereum.RPC.Eth.DTOs;
 using Nethereum.Web3;
@@ -43,5 +40,32 @@ namespace AspireDEX.Blockchain.Contracts.Erc20
             var function = new TransferFunction { To = to, Amount = amount };
             return ContractHandler.SendRequestAndWaitForReceiptAsync(function, cancellationToken);
         }
+
+        public override List<Type> GetAllFunctionTypes()
+        {
+            return new List<Type>
+            {
+                typeof(BalanceOfFunction),
+                typeof(DecimalsFunction),
+                typeof(SymbolFunction),
+                typeof(ApproveFunction),
+                typeof(TransferFunction)
+            };
+        }
+
+        public override List<Type> GetAllEventTypes()
+        {
+            // Intentionally minimal: this wrapper only covers the handful of standard ERC20
+            // functions AddLiquidity/RemoveLiquidity actually need (see DexBlockchainService).
+            // It doesn't declare Transfer/Approval events or the ERC20 custom errors, since
+            // nothing here decodes them — add them here first if a caller ever needs to.
+            return new List<Type>();
+        }
+
+        public override List<Type> GetAllErrorTypes()
+        {
+            return new List<Type>();
+        }
     }
 }
+
